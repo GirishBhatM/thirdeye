@@ -112,7 +112,7 @@ public class SqlUtils {
     for (String dimension: dimensions) {
       sb.append(dimension).append(" varchar(50), ");
     }
-    sb.append(timeColumn).append(" varchar(50) ) ENGINE=InnoDB;");
+    sb.append(timeColumn).append(" varchar(50) );");
 
     String sql = sb.toString();
 
@@ -603,7 +603,7 @@ public class SqlUtils {
       case "yyyy-MM-dd-HH":
         return "%Y-%m-%d-%H";
       default:
-        return "%Y-%m-%d %H:%M:%S";
+        return "%Y-%m-%d %H:%M:%E*S+00";
     }
   }
 
@@ -618,7 +618,10 @@ public class SqlUtils {
    */
   private static String getToUnixTimeClause(String timeFormat, String timeColumn, String sourceName) {
     if (sourceName.equals(PRESTO)) {
-      return "TO_UNIXTIME(PARSE_DATETIME(CAST(" + timeColumn + " AS VARCHAR), '" + timeFormat + "'))";
+      String replaced = "CAST(to_unixtime(CAST("+timeColumn+"  AS timestamp)) AS BIGINT)";
+      LOG.info("replaced data {}",replaced);
+      return replaced;
+    //  return "TO_UNIXTIME(PARSE_DATETIME(CAST(" + timeColumn + " AS VARCHAR), '" + timeFormat + "'))";
     } else if (sourceName.equals(MYSQL)) {
       return "UNIX_TIMESTAMP(STR_TO_DATE(CAST(" + timeColumn + " AS CHAR), '" + timeFormatToMySQLFormat(timeFormat) + "'))";
     } else if (sourceName.equals(H2)){
@@ -626,7 +629,7 @@ public class SqlUtils {
     } else if (sourceName.equals(VERTICA)) {
       return "EXTRACT(EPOCH FROM to_timestamp(to_char(" + timeColumn + "), '" + timeFormatToVerticaFormat(timeFormat) + "'))";
     } else if (sourceName.equals(BIGQUERY)) {
-      return "UNIX_SECONDS(TIMESTAMP(PARSE_DATETIME(\"" + timeFormatToBigQueryFormat(timeFormat) + "\", " + timeColumn + ")))";
+      return "UNIX_SECONDS(TIMESTAMP(PARSE_DATETIME(\"" + timeFormatToBigQueryFormat(timeFormat) + "\", CAST(" + timeColumn + " AS string))))";
     }
     return "";
   }
