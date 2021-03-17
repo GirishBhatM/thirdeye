@@ -308,10 +308,11 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
         ResultSet rs = stmt.executeQuery(SqlUtils.getMaxDataTimeSQL(timeSpec.getColumnName(), tableName, sourceName))) {
       if (rs.next()) {
         String maxTimeString = rs.getString(1);
+        /**
         if (maxTimeString.indexOf('.') >= 0) {
           maxTimeString = maxTimeString.substring(0, maxTimeString.indexOf('.'));
         }
-
+        **/ 
         String timeFormat = timeSpec.getFormat();
 
         if (StringUtils.isBlank(timeFormat) || TimeSpec.SINCE_EPOCH_FORMAT.equals(timeFormat)) {
